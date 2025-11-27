@@ -8,10 +8,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -181,20 +178,31 @@ public class TaskService implements ITaskService{
 
     @Override
     @Transactional
-    public TaskDashboardDTO getDashboard(Long userId) {
+    public TaskDashboardDTO getDashboard() {
         User current = iUserService.getCurrentUser();
-
-        if (!Objects.equals(current.getId(), userId)) {
-            // error
-        }
 
         List<Task> tasks = iTaskRepository.findByCreatedById(current.getId());
 
         int total = tasks.size();
-        int completed = (int) tasks.stream().filter(t -> t.getStatus() == Task.Status.COMPLETED).count();
         int pending = (int) tasks.stream().filter(t -> t.getStatus() == Task.Status.PENDING).count();
+        int completed = (int) tasks.stream().filter(t -> t.getStatus() == Task.Status.COMPLETED).count();
+        int inProgress = (int) tasks.stream().filter(t -> t.getStatus() == Task.Status.IN_PROGRESS).count();
         int overdue = (int) tasks.stream().filter(t -> t.getDueDate().before(new Date())).count();
 
-        return new TaskDashboardDTO(total, completed, pending, overdue);
+        Map<String, Integer> distribution = Map.of(
+                "PENDING", pending,
+                "IN_PROGRESS", inProgress,
+                "COMPLETED", completed,
+                "OVERDUE", overdue,
+                "ALL", total
+        );
+
+        Map<String, Integer> priorityLevels = Map.of(
+                "LOW", (int) tasks.stream().filter(t -> t.getPriority() == Task.Priority.LOW).count(),
+                "MEDIUM", (int) tasks.stream().filter(t -> t.getPriority() == Task.Priority.MEDIUM).count(),
+                "HIGH", (int) tasks.stream().filter(t -> t.getPriority() == Task.Priority.HIGH).count()
+        );
+
+        return new TaskDashboardDTO(total, pending, inProgress, completed, overdue, distribution, priorityLevels);
     }
 }

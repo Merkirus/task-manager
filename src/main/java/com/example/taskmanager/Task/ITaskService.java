@@ -29,5 +29,5 @@ public interface ITaskService {
     @Transactional
     abstract public Task deleteChecklistItem(Long taskId, Long itemId);
     @Transactional
-    abstract public TaskDashboardDTO getDashboard(Long userId);
+    abstract public TaskDashboardDTO getDashboard();
 }

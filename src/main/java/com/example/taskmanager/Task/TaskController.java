@@ -108,10 +108,10 @@ public class TaskController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<TaskDashboardDTO> getDashboard(@RequestParam Long userId) {
+    public ResponseEntity<TaskDashboardDTO> getDashboard() {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(iTaskService.getDashboard(userId));
+                .body(iTaskService.getDashboard());
     }
 }

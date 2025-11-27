@@ -1,9 +1,6 @@
 package com.example.taskmanager.Task;
 
-import com.example.taskmanager.Task.Dto.TaskCreateDTO;
-import com.example.taskmanager.Task.Dto.TaskResponseDTO;
-import com.example.taskmanager.Task.Dto.TaskUpdateDTO;
-import com.example.taskmanager.Task.Dto.ToDoItemUpdateDTO;
+import com.example.taskmanager.Task.Dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -108,5 +105,13 @@ public class TaskController {
                 .status(HttpStatus.OK)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .body(iTaskService.deleteChecklistItem(taskId, itemId));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<TaskDashboardDTO> getDashboard(@RequestParam Long userId) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(iTaskService.getDashboard(userId));
     }
 }

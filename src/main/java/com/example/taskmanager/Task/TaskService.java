@@ -1,9 +1,6 @@
 package com.example.taskmanager.Task;
 
-import com.example.taskmanager.Task.Dto.TaskCreateDTO;
-import com.example.taskmanager.Task.Dto.TaskResponseDTO;
-import com.example.taskmanager.Task.Dto.TaskUpdateDTO;
-import com.example.taskmanager.Task.Dto.ToDoItemUpdateDTO;
+import com.example.taskmanager.Task.Dto.*;
 import com.example.taskmanager.User.IUserService;
 import com.example.taskmanager.User.User;
 import com.example.taskmanager.User.UserService;
@@ -12,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -169,6 +168,7 @@ public class TaskService implements ITaskService{
     }
 
     @Override
+    @Transactional
     public Task deleteChecklistItem(Long taskId, Long itemId) {
         Task task = getTaskForCurrentUser(taskId);
 
@@ -177,5 +177,24 @@ public class TaskService implements ITaskService{
         );
 
         return iTaskRepository.save(task);
+    }
+
+    @Override
+    @Transactional
+    public TaskDashboardDTO getDashboard(Long userId) {
+        User current = iUserService.getCurrentUser();
+
+        if (!Objects.equals(current.getId(), userId)) {
+            // error
+        }
+
+        List<Task> tasks = iTaskRepository.findByCreatedById(current.getId());
+
+        int total = tasks.size();
+        int completed = (int) tasks.stream().filter(t -> t.getStatus() == Task.Status.COMPLETED).count();
+        int pending = (int) tasks.stream().filter(t -> t.getStatus() == Task.Status.PENDING).count();
+        int overdue = (int) tasks.stream().filter(t -> t.getDueDate().before(new Date())).count();
+
+        return new TaskDashboardDTO(total, completed, pending, overdue);
     }
 }

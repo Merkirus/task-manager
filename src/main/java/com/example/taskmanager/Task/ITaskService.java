@@ -1,9 +1,6 @@
 package com.example.taskmanager.Task;
 
-import com.example.taskmanager.Task.Dto.TaskCreateDTO;
-import com.example.taskmanager.Task.Dto.TaskResponseDTO;
-import com.example.taskmanager.Task.Dto.TaskUpdateDTO;
-import com.example.taskmanager.Task.Dto.ToDoItemUpdateDTO;
+import com.example.taskmanager.Task.Dto.*;
 import com.example.taskmanager.User.User;
 import jakarta.transaction.Transactional;
 
@@ -31,4 +28,6 @@ public interface ITaskService {
     abstract public Task addChecklistItem(Long taskId, ToDoItemUpdateDTO item);
     @Transactional
     abstract public Task deleteChecklistItem(Long taskId, Long itemId);
+    @Transactional
+    abstract public TaskDashboardDTO getDashboard(Long userId);
 }

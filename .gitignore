@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+/META-INF/
+/src/main/ai_service/model.pkl
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Python venv
+.venv/
+venv/

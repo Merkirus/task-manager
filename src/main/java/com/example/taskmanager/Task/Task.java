@@ -3,6 +3,8 @@ package com.example.taskmanager.Task;
 import com.example.taskmanager.User.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 import java.util.List;
@@ -48,6 +50,15 @@ public class Task {
     private List<ToDoItem> toDoCheckList;
 
     private Integer progress = 0;
+
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(updatable = false)
+    private Date createdAt;
+
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedAt;
 
     public enum Priority { LOW, MEDIUM, HIGH }
     public enum Status { PENDING, IN_PROGRESS, COMPLETED }

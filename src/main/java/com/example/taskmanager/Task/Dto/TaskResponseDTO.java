@@ -17,7 +17,10 @@ public record TaskResponseDTO(
         List<String> attachments,
         List<ToDoItem> toDoCheckList,
         String assignedTo,
-        String createdBy
+        Long assignedToId,
+        String createdBy,
+        Long createdById,
+        Date createdAt
 ) {
     public static TaskResponseDTO from(Task task) {
         return new TaskResponseDTO(
@@ -31,7 +34,10 @@ public record TaskResponseDTO(
                 task.getAttachments(),
                 task.getToDoCheckList(),
                 task.getAssignedTo() != null ? task.getAssignedTo().getName() : null,
-                task.getCreatedBy().getName()
+                task.getAssignedTo() != null ? task.getAssignedTo().getId() : null,
+                task.getCreatedBy().getName(),
+                task.getCreatedBy() != null ? task.getCreatedBy().getId() : null,
+                task.getCreatedAt()
         );
     }
 }

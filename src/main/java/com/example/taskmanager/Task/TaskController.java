@@ -42,19 +42,7 @@ public class TaskController {
 
     @PostMapping
     public ResponseEntity<TaskResponseDTO> addTask(@RequestBody TaskCreateDTO taskDTO) {
-
-
         TaskResponseDTO savedTask = iTaskService.addTask(taskDTO);
-
-        taskPredictService.requestAndSavePrediction(
-                savedTask.id(),
-                savedTask.priority(),
-                savedTask.createdAt().toString(),
-                savedTask.dueDate() != null ? savedTask.dueDate().toString() : null,
-                savedTask.assignedToId(),
-                savedTask.createdById()
-        );
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

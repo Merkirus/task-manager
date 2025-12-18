@@ -2,5 +2,14 @@ package com.example.taskmanager.TaskPredict;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ITaskPredictRepository extends JpaRepository<TaskPredict, Long> {
+import java.util.List;
+import java.util.Optional;
+
+public interface ITaskPredictRepository
+        extends JpaRepository<TaskPredict, Long> {
+
+    Optional<TaskPredict>
+    findTopByTaskIdOrderByCreatedAtDesc(Long taskId);
+
+    List<TaskPredict> findByTaskId(Long taskId);
 }

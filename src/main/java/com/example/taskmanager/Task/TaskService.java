@@ -1,6 +1,10 @@
 package com.example.taskmanager.Task;
 
 import com.example.taskmanager.Task.Dto.*;
+import com.example.taskmanager.TaskPredict.DTO.PredictionDTO;
+import com.example.taskmanager.TaskPredict.ITaskPredictRepository;
+import com.example.taskmanager.TaskPredict.TaskPredict;
+import com.example.taskmanager.TaskPredict.TaskPredictService;
 import com.example.taskmanager.User.IUserService;
 import com.example.taskmanager.User.User;
 import com.example.taskmanager.User.UserService;
@@ -8,6 +12,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -15,6 +21,8 @@ import java.util.*;
 public class TaskService implements ITaskService{
     private final ITaskRepository iTaskRepository;
     private final IUserService iUserService;
+    private final TaskPredictService taskPredictService;
+    private final ITaskPredictRepository taskPredictRepository;
 
     private Task getTaskForCurrentUser(Long id) {
         Task task = iTaskRepository.findById(id)
@@ -34,19 +42,41 @@ public class TaskService implements ITaskService{
     public TaskResponseDTO addTask(TaskCreateDTO dto) {
         User current = iUserService.getCurrentUser();
 
-        Task task = Task.builder()
-        .title(dto.title())
-        .description(dto.description())
-        .priority(Task.Priority.valueOf(dto.priority()))
-        .status(Task.Status.valueOf(dto.status()))
-        .dueDate(dto.dueDate())
-        .attachments(dto.attachments())
-        .toDoCheckList(dto.toDoCheckList())
-        .createdBy(current)
-        .progress(0)
-        .build();
 
-        return TaskResponseDTO.from(iTaskRepository.save(task));
+        Task task = Task.builder()
+                .title(dto.title())
+                .description(dto.description())
+                .priority(Task.Priority.valueOf(dto.priority()))
+                .status(Task.Status.valueOf(dto.status()))
+                .dueDate(dto.dueDate())
+                .attachments(dto.attachments())
+                .toDoCheckList(dto.toDoCheckList())
+                .createdBy(current)
+                .progress(0)
+                .build();;
+
+        task = iTaskRepository.save(task);
+
+
+        TaskPredict taskPredict = taskPredictService.requestAndSavePrediction(
+                task.getId(),
+                task.getPriority().name(),
+                task.getCreatedAt().toString(),
+                task.getDueDate() != null ? task.getDueDate().toString() : null,
+                task.getAssignedTo() != null ? task.getAssignedTo().getId() : null,
+                task.getCreatedBy() != null ? task.getCreatedBy().getId() : null
+        );
+
+        PredictionDTO predictionDTO = null;
+        if (taskPredict != null) {
+            predictionDTO = new PredictionDTO(
+                    taskPredict.getEstimatedMinutes(),
+                    0.0,
+                    taskPredict.getModelVersion()
+            );
+        }
+
+        return TaskResponseDTO.from(task, predictionDTO);
     }
 
     @Override
@@ -133,7 +163,24 @@ public class TaskService implements ITaskService{
     public Task updateStatus(Long taskId, String status) {
         Task task = getTaskForCurrentUser(taskId);
 
-        task.setStatus(Task.Status.valueOf(status));
+        Task.Status newStatus = Task.Status.valueOf(status);
+        task.setStatus(newStatus);
+
+        if (newStatus == Task.Status.COMPLETED) {
+
+            taskPredictRepository
+                    .findTopByTaskIdOrderByCreatedAtDesc(taskId)
+                    .ifPresent(pred -> {
+
+                        long minutes = ChronoUnit.MINUTES.between(
+                                task.getCreatedAt().toInstant(),
+                                Instant.now()
+                        );
+
+                        pred.setRealMinutes((int) minutes);
+                        taskPredictRepository.save(pred);
+                    });
+        }
 
         return iTaskRepository.save(task);
     }
@@ -205,4 +252,21 @@ public class TaskService implements ITaskService{
 
         return new TaskDashboardDTO(total, pending, inProgress, completed, overdue, distribution, priorityLevels);
     }
+    private final ITaskRepository taskRepository;
+    @Override
+    public Task addTaskEntity(TaskCreateDTO dto) {
+        Task task = Task.builder()
+                .title(dto.title())
+                .description(dto.description())
+                .priority(Task.Priority.valueOf(dto.priority()))
+                .status(Task.Status.PENDING)
+                .createdAt(new Date())
+                .dueDate(dto.dueDate())
+                .build();
+
+        return taskRepository.save(task);
+    }
+
+
+
 }

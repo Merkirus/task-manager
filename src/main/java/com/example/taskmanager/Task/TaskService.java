@@ -6,6 +6,8 @@ import com.example.taskmanager.User.User;
 import com.example.taskmanager.User.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -34,17 +36,26 @@ public class TaskService implements ITaskService{
     public TaskResponseDTO addTask(TaskCreateDTO dto) {
         User current = iUserService.getCurrentUser();
 
+        User assignedTo;
+
+        if (dto.assignedTo() != null) {
+            assignedTo = iUserService.getUser(dto.assignedTo());
+        } else {
+            assignedTo = current;
+        }
+
         Task task = Task.builder()
-        .title(dto.title())
-        .description(dto.description())
-        .priority(Task.Priority.valueOf(dto.priority()))
-        .status(Task.Status.valueOf(dto.status()))
-        .dueDate(dto.dueDate())
-        .attachments(dto.attachments())
-        .toDoCheckList(dto.toDoCheckList())
-        .createdBy(current)
-        .progress(0)
-        .build();
+            .title(dto.title())
+            .description(dto.description())
+            .priority(Task.Priority.valueOf(dto.priority()))
+            .status(Task.Status.valueOf(dto.status()))
+            .dueDate(dto.dueDate())
+            .attachments(dto.attachments())
+            .toDoCheckList(dto.toDoCheckList())
+            .createdBy(current)
+            .assignedTo(assignedTo)
+            .progress(0)
+            .build();
 
         return TaskResponseDTO.from(iTaskRepository.save(task));
     }
@@ -78,19 +89,21 @@ public class TaskService implements ITaskService{
 
         Long uid = iUserService.getCurrentUser().getId();
 
-        if (!old_task.getCreatedBy().getId().equals(uid)) {
+        if (old_task == null || !old_task.getCreatedBy().getId().equals(uid)) {
             // throw
+        } else {
+            old_task.setTitle(task.title());
+            old_task.setDescription(task.description());
+            old_task.setPriority(Task.Priority.valueOf(task.priority()));
+            old_task.setStatus(Task.Status.valueOf(task.status()));
+            old_task.setDueDate(task.dueDate());
+            old_task.setProgress(task.progress());
+            old_task.setAttachments(task.attachments());
+            old_task.setToDoCheckList(task.toDoCheckList());
+            old_task.setAssignedTo(iUserService.getUser(task.assignedTo()));
         }
 
-        old_task.setTitle(task.title());
-        old_task.setDescription(task.description());
-        old_task.setPriority(Task.Priority.valueOf(task.priority()));
-        old_task.setStatus(Task.Status.valueOf(task.status()));
-        old_task.setDueDate(task.dueDate());
-        old_task.setProgress(task.progress());
-        old_task.setAttachments(task.attachments());
-        old_task.setToDoCheckList(task.toDoCheckList());
-
+        // moze sie wywalic, bo throw nie zaimplementowane
         return TaskResponseDTO.from(iTaskRepository.save(old_task));
     }
 
@@ -203,6 +216,15 @@ public class TaskService implements ITaskService{
                 "HIGH", (int) tasks.stream().filter(t -> t.getPriority() == Task.Priority.HIGH).count()
         );
 
-        return new TaskDashboardDTO(total, pending, inProgress, completed, overdue, distribution, priorityLevels);
+        Pageable pageable = PageRequest.of(0, 3);
+
+        List<Task> recentTasks = iTaskRepository.findRecetTasks(current.getId(), pageable);
+
+        List<TaskResponseDTO> recentDTOs = recentTasks
+                .stream()
+                .map(TaskResponseDTO::from)
+                .toList();
+
+        return new TaskDashboardDTO(total, pending, inProgress, completed, overdue, distribution, priorityLevels, recentDTOs);
     }
 }

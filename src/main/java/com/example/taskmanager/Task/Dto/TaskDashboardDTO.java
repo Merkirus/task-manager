@@ -1,5 +1,6 @@
 package com.example.taskmanager.Task.Dto;
 
+import java.util.List;
 import java.util.Map;
 
 public record TaskDashboardDTO(
@@ -9,5 +10,6 @@ public record TaskDashboardDTO(
     int completedTasks,
     int overdueTasks,
     Map<String, Integer> taskDistribution,
-    Map<String, Integer> taskPriorityLevels
+    Map<String, Integer> taskPriorityLevels,
+    List<TaskResponseDTO> recentTasks
 ) {}

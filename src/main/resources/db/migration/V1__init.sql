@@ -55,3 +55,23 @@ CREATE TABLE task_to_do_check_list (
     CONSTRAINT fk_task_todo_task FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
     CONSTRAINT fk_task_todo_item FOREIGN KEY (to_do_check_list_id) REFERENCES to_do_item(id) ON DELETE CASCADE
 );
+
+CREATE TABLE task_predict (
+    id BIGSERIAL PRIMARY KEY,
+
+    task_id BIGINT NOT NULL,
+    assigned_to_id BIGINT,
+    created_by_id BIGINT,
+
+    priority VARCHAR(20),
+    estimated_minutes INT,
+    real_minutes INT,
+    model_version VARCHAR(50),
+
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_task_predict_task
+        FOREIGN KEY (task_id)
+        REFERENCES tasks(id)
+        ON DELETE CASCADE
+);

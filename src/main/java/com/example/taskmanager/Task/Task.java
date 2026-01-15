@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
+@Table(name = "tasks")
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -44,9 +45,16 @@ public class Task {
     private User createdBy;
 
     @ElementCollection
+    @CollectionTable(name = "task_attachments", joinColumns = @JoinColumn(name = "task_id"))
+    @Column(name = "attachment")
     private List<String> attachments;
 
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "task_to_do_check_list",
+            joinColumns = @JoinColumn(name = "task_id"),
+            inverseJoinColumns = @JoinColumn(name = "to_do_check_list_id")
+    )
     private List<ToDoItem> toDoCheckList;
 
     private Integer progress = 0;
@@ -64,6 +72,7 @@ public class Task {
     public enum Status { PENDING, IN_PROGRESS, COMPLETED }
 
     @Entity
+    @Table(name = "to_do_item")
     @Getter @Setter
     @NoArgsConstructor
     @AllArgsConstructor

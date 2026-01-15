@@ -76,3 +76,23 @@ CREATE TABLE task_predict (
 
     model_version VARCHAR(100)
 );
+
+CREATE TABLE task_predict (
+    id BIGSERIAL PRIMARY KEY,
+
+    task_id BIGINT NOT NULL,
+    assigned_to_id BIGINT,
+    created_by_id BIGINT,
+
+    priority VARCHAR(20),
+    estimated_minutes INT,
+    real_minutes INT,
+    model_version VARCHAR(50),
+
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_task_predict_task
+        FOREIGN KEY (task_id)
+        REFERENCES tasks(id)
+        ON DELETE CASCADE
+);

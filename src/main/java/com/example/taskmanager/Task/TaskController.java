@@ -1,6 +1,7 @@
 package com.example.taskmanager.Task;
 
 import com.example.taskmanager.Task.Dto.*;
+import com.example.taskmanager.TaskPredict.TaskPredictService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -12,11 +13,15 @@ import java.util.Collection;
 
 @RequestMapping("/tasks")
 @RestController
+
 public class TaskController {
     private final ITaskService iTaskService;
+    private final TaskPredictService taskPredictService;
 
-    public TaskController(ITaskService iTaskService) {
+    public TaskController(ITaskService iTaskService, TaskPredictService taskPredictService) {
+
         this.iTaskService = iTaskService;
+        this.taskPredictService = taskPredictService;
     }
 
     @GetMapping
@@ -36,11 +41,12 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskResponseDTO> addTask(@RequestBody TaskCreateDTO task) {
-        return  ResponseEntity
+    public ResponseEntity<TaskResponseDTO> addTask(@RequestBody TaskCreateDTO taskDTO) {
+        TaskResponseDTO savedTask = iTaskService.addTask(taskDTO);
+        return ResponseEntity
                 .status(HttpStatus.OK)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(iTaskService.addTask(task));
+                .body(savedTask);
     }
 
     @PutMapping("/{id}")

@@ -21,7 +21,7 @@ CREATE TABLE tasks (
    due_date DATE NOT NULL,
    progress INT DEFAULT 0,
    created_at TIMESTAMP NOT NULL DEFAULT now(),
-   updated_at TIMESTAMP NOT NULL DEFAULT now(),
+   updated_at TIMESTAMP,
 
 
    assigned_to_id BIGINT,
@@ -57,24 +57,6 @@ CREATE TABLE task_to_do_check_list (
 
     CONSTRAINT fk_task_todo_task FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
     CONSTRAINT fk_task_todo_item FOREIGN KEY (to_do_check_list_id) REFERENCES to_do_item(id) ON DELETE CASCADE
-);
-
-CREATE TABLE task_predict (
-    id BIGSERIAL PRIMARY KEY,
-
-    task_id BIGINT NOT NULL,
-
-    estimated_minutes INTEGER,
-    real_minutes INTEGER,
-
-    priority VARCHAR(50),
-
-    assigned_to_id BIGINT,
-    created_by_id BIGINT,
-
-    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-
-    model_version VARCHAR(100)
 );
 
 CREATE TABLE task_predict (

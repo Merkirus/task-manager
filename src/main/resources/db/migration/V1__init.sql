@@ -20,6 +20,9 @@ CREATE TABLE tasks (
    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
    due_date DATE NOT NULL,
    progress INT DEFAULT 0,
+   created_at TIMESTAMP NOT NULL DEFAULT now(),
+   updated_at TIMESTAMP,
+
 
    assigned_to_id BIGINT,
    created_by_id BIGINT,

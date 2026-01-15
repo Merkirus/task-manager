@@ -12,5 +12,6 @@ public record TaskCreateDTO(
         String status,
         Date dueDate,
         List<String> attachments,
-        List<ToDoItem> toDoCheckList
+        List<ToDoItem> toDoCheckList,
+        Long assignedTo
 ) {}

@@ -13,5 +13,6 @@ public record TaskUpdateDTO(
         Date dueDate,
         Integer progress,
         List<String> attachments,
-        List<ToDoItem> toDoCheckList
+        List<ToDoItem> toDoCheckList,
+        Long assignedTo
 ) {}

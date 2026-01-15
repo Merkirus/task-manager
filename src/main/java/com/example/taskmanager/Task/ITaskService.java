@@ -30,4 +30,7 @@ public interface ITaskService {
     abstract public Task deleteChecklistItem(Long taskId, Long itemId);
     @Transactional
     abstract public TaskDashboardDTO getDashboard();
+    @Transactional
+    abstract public Task addTaskEntity(TaskCreateDTO taskDTO);
+
 }

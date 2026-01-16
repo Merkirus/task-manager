@@ -89,7 +89,7 @@ public class TaskService implements ITaskService{
     @Override
     public Collection<TaskResponseDTO> getTasks() {
         User current = iUserService.getCurrentUser();
-        return iTaskRepository.findAll()
+        return iTaskRepository.findByCreatedById(current.getId())
                 .stream()
                 .map(TaskResponseDTO::from)
                 .toList();

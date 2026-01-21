@@ -16,7 +16,6 @@ PRIORITY_MAP = {
 def featurize(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
-    # priority: string -> int (SAFE)
     if df["priority"].dtype == object:
         df["priority"] = df["priority"].str.upper().map(PRIORITY_MAP)
 

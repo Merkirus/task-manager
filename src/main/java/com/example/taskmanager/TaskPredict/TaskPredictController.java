@@ -23,6 +23,10 @@ public class TaskPredictController {
         return service.getAll();
     }
 
+    @GetMapping("/current")
+    public List<TaskPredictViewDTO> getById() {
+        return service.getById();
+    }
 
     @GetMapping("/task/{taskId}")
     public List<TaskPredictViewDTO> getByTask(@PathVariable Long taskId) {

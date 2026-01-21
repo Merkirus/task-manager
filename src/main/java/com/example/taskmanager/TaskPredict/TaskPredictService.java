@@ -1,15 +1,20 @@
 package com.example.taskmanager.TaskPredict;
 
+import com.example.taskmanager.Task.Dto.TaskResponseDTO;
+import com.example.taskmanager.Task.ITaskRepository;
 import com.example.taskmanager.TaskPredict.DTO.PredictRequest;
 import com.example.taskmanager.TaskPredict.DTO.PredictResponse;
 import com.example.taskmanager.TaskPredict.DTO.PredictionDTO;
 import com.example.taskmanager.TaskPredict.DTO.TaskPredictViewDTO;
+import com.example.taskmanager.User.IUserService;
+import com.example.taskmanager.User.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +27,8 @@ public class TaskPredictService {
 
     @Value("${ai.service.url:http://localhost:5000}")
     private String aiServiceUrl;
+    private final IUserService iUserService;
+    private final ITaskRepository iTaskRepository;
 
     public TaskPredict requestAndSavePrediction(
             Long taskId,
@@ -74,6 +81,14 @@ public class TaskPredictService {
 
     public List<TaskPredictViewDTO> getByTask(Long taskId) {
         return repo.findByTaskId(taskId)
+                .stream()
+                .map(TaskPredictViewDTO::from)
+                .toList();
+    }
+
+    public List<TaskPredictViewDTO> getById() {
+        User current = iUserService.getCurrentUser();
+        return repo.findPredictionsForUser(current.getId())
                 .stream()
                 .map(TaskPredictViewDTO::from)
                 .toList();

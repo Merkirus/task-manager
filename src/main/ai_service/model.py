@@ -3,6 +3,9 @@ import os
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import joblib
 
 MODEL_PATH = os.environ.get("MODEL_PATH", "model.pkl")
 
@@ -59,9 +62,17 @@ def load_model():
     return None
 
 
+
 def train_from_df(df: pd.DataFrame):
     X = featurize(df)
     y = df["real_minutes"]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=0.2,
+        random_state=42
+    )
 
     model = RandomForestRegressor(
         n_estimators=200,
@@ -69,9 +80,15 @@ def train_from_df(df: pd.DataFrame):
         n_jobs=-1
     )
 
-    model.fit(X, y)
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
     joblib.dump(model, MODEL_PATH)
+
     return model
+
+
 
 
 

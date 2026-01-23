@@ -25,7 +25,7 @@ public class TaskPredictService {
     private final ITaskPredictRepository repo;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${ai.service.url:http://localhost:5000}")
+    @Value("${AI_SERVICE_URL}")
     private String aiServiceUrl;
     private final IUserService iUserService;
     private final ITaskRepository iTaskRepository;

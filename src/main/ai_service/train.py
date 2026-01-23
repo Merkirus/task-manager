@@ -5,11 +5,11 @@ import os
 from datetime import datetime
 
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "task_manager_clean",
-    "user": "postgres",
-    "password": "1234",
+    "host": os.getenv("DB_HOST", "db"),
+    "port": int(os.getenv("DB_PORT", 5432)),
+    "dbname": os.getenv("DB_NAME", "task_manager"),
+    "user": os.getenv("DB_USER", "postgres"),
+    "password": os.getenv("DB_PASSWORD", "1234"),
     "options": "-c search_path=public"
 }
 
@@ -37,6 +37,7 @@ def load_training_data():
     return df
 
 def train_model_from_db():
+
     df = load_training_data()
     model = train_from_df(df)
     return model

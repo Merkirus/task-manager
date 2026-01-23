@@ -20,14 +20,36 @@ def featurize(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
     if df["priority"].dtype == object:
-        df["priority"] = df["priority"].str.upper().map(PRIORITY_MAP)
-
+        df["priority"] = (
+            df["priority"]
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .map(PRIORITY_MAP)
+        )
+    if df["priority"].dtype == str:
+        df["priority"] = (
+            df["priority"]
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .map(PRIORITY_MAP)
+        )
     df["priority"] = df["priority"].fillna(1)  #med
+    df["priority"] = (
+        df["priority"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+        .map(PRIORITY_MAP)
+        .fillna(1)
+        .astype(int)
+    )
 
     #dates
-    df["created_at"] = pd.to_datetime(df["created_at"], errors="coerce")
-    df["created_dow"] = df["created_at"].dt.weekday.fillna(0)
-    df["created_hour"] = df["created_at"].dt.hour.fillna(12)
+    df["created_at"] = pd.to_datetime(df["created_at"], errors="coerce").fillna(pd.Timestamp("2000-01-01"))
+    df["created_dow"] = df["created_at"].dt.weekday
+    df["created_hour"] = df["created_at"].dt.hour
 
     if "due_date" in df.columns:
         df["due_date"] = pd.to_datetime(df["due_date"], errors="coerce")
@@ -40,8 +62,8 @@ def featurize(df: pd.DataFrame) -> pd.DataFrame:
         df["days_until_due"] = -1
 
 
-    df["assigned_to_id"] = df.get("assigned_to_id", -1).fillna(-1)
-    df["created_by_id"] = df.get("created_by_id", -1).fillna(-1)
+    df["assigned_to_id"] =  pd.to_numeric(df.get("assigned_to_id", -1), errors="coerce").fillna(-1).astype(int)
+    df["created_by_id"] = pd.to_numeric(df.get("created_by_id", -1), errors="coerce").fillna(-1).astype(int)
 
     return df[
         [
@@ -64,15 +86,29 @@ def load_model():
 
 
 def train_from_df(df: pd.DataFrame):
+
+    df = df.copy()
+    df["real_minutes"] = pd.to_numeric(df["real_minutes"], errors="coerce")
+    df = df.dropna(subset=["real_minutes"])
+
+    if df.empty:
+        raise ValueError("Brak danych po czyszczeniu real_minutes")
+
     X = featurize(df)
     y = df["real_minutes"]
 
+    #print("X HEAD ")
+    #print(X.head())
+    #print("\nX DTYPES")
+    #print(X.dtypes)
+
+
     X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size=0.2,
-        random_state=42
-    )
+            X, y, test_size=0.2, random_state=42
+        )
+    #print(f"Samples total : {len(df)}")
+    #print(f"Train samples: {len(X_train)}")
+    #print(f"Test samples : {len(X_test)}")
 
     model = RandomForestRegressor(
         n_estimators=200,
@@ -82,13 +118,8 @@ def train_from_df(df: pd.DataFrame):
 
     model.fit(X_train, y_train)
 
-    y_pred = model.predict(X_test)
-
     joblib.dump(model, MODEL_PATH)
-
     return model
-
-
 
 
 
